@@ -46,8 +46,8 @@ public class RequiredResourcesProperty extends JobProperty<Job<?, ?>> {
 		this.resourceNames = resourceNames;
 		this.resourceNamesVar = resourceNamesVar;
 		this.resourceNumber = resourceNumber;
-	    // When dealing with labelName, ignore leading and trailing spaces,
-        // which are likely to result of browser auto-completion trying to be helpful
+		// When dealing with labelName, ignore leading and trailing spaces,
+		// which are likely to result of browser auto-completion trying to be helpful
 		if (resourceMatchScript != null) {
 			this.resourceMatchScript = resourceMatchScript.configuringWithKeyItem();
 			this.labelName = labelName == null ? labelName : labelName.trim();
@@ -57,7 +57,7 @@ public class RequiredResourcesProperty extends JobProperty<Job<?, ?>> {
 			this.labelName = null;
 		} else {
 			this.resourceMatchScript = null;
- 		    this.labelName = labelName == null ? labelName : labelName.trim();
+			this.labelName = labelName == null ? labelName : labelName.trim();
 		}
 	}
 
