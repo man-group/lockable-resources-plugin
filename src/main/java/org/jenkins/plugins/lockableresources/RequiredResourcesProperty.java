@@ -46,16 +46,18 @@ public class RequiredResourcesProperty extends JobProperty<Job<?, ?>> {
 		this.resourceNames = resourceNames;
 		this.resourceNamesVar = resourceNamesVar;
 		this.resourceNumber = resourceNumber;
+	    // When dealing with labelName, ignore leading and trailing spaces,
+        // which are likely to result of browser auto-completion trying to be helpful
 		if (resourceMatchScript != null) {
 			this.resourceMatchScript = resourceMatchScript.configuringWithKeyItem();
-			this.labelName = labelName;
+			this.labelName = labelName == null ? labelName : labelName.trim();
 		} else if (labelName != null && labelName.startsWith(LockableResource.GROOVY_LABEL_MARKER)) {
-			this.resourceMatchScript = new SecureGroovyScript(labelName.substring(LockableResource.GROOVY_LABEL_MARKER.length()),
+			this.resourceMatchScript = new SecureGroovyScript(labelName.trim().substring(LockableResource.GROOVY_LABEL_MARKER.length()),
 					false, null).configuring(ApprovalContext.create());
 			this.labelName = null;
 		} else {
 			this.resourceMatchScript = null;
-			this.labelName = labelName;
+ 		    this.labelName = labelName == null ? labelName : labelName.trim();
 		}
 	}
 
@@ -121,13 +123,7 @@ public class RequiredResourcesProperty extends JobProperty<Job<?, ?>> {
 	}
 
 	public String getLabelName() {
-        if (labelName == null) {
-		    return labelName;
-        } else {
-            // Ignore leading and trailing spaces, which are likely to result of browser
-            // auto-completion trying to be helpful
-            return labelName.trim();
-        }
+		return labelName;
 	}
 
         /**
