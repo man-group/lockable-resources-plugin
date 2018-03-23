@@ -61,6 +61,44 @@ public class LockStepTest {
 	}
 
 	@Test
+	public void resourceDeleted() {
+		story.addStep(new Statement() {
+			@Override
+			public void evaluate() throws Throwable {
+				LockableResourcesManager.get().createResource("resource1");
+				int stepIndex = 1;
+				WorkflowJob p = UtilFn.createWaitingForResourcesJob(story, "resource: 'resource1'", "p");
+				String lockMessage = "resource1";
+
+				WorkflowRun b1 = p.scheduleBuild2(0).waitForStart();
+				SemaphoreStep.waitForStart("wait-inside/1", b1);
+
+				WorkflowRun b2 = UtilFn.scheduleBuildAndCheckWaiting(story, p, lockMessage, 1, 0);
+				// b1 will be running and have a lock on resource1
+				// b2 will be in the queue and waiting for a lock on resource1
+
+				// now delete the resource
+				LockableResourcesManager.get().getResources().remove(0);
+
+				// Unlock b1 and it will complete even though resource has been deleted, logging a warning
+				stepIndex = UtilFn.acquireLockAndFinishBuild(story, b1, lockMessage, stepIndex);
+
+				// b2 can't start as it is waiting for a resource that isn't there
+
+				// other jobs won't be impacted though and can run happily
+				WorkflowJob p2 = UtilFn.createWaitingForResourcesJob(story, "resource: 'resource2'", "happy");
+				WorkflowRun happy = p2.scheduleBuild2(0).waitForStart();
+				stepIndex = UtilFn.acquireLockAndFinishBuild(story, happy, "resource2", stepIndex);
+
+				// re-create the resource ...
+				LockableResourcesManager.get().createResource("resource1");
+				// and b2 will complete
+				stepIndex = UtilFn.acquireLockAndFinishBuild(story, b2, lockMessage, stepIndex);
+				}
+		});
+	}
+
+	@Test
 	public void lockWithLabel() {
 		story.addStep(new Statement() {
 			@Override

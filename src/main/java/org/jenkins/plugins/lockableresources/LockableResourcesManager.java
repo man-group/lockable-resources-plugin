@@ -424,7 +424,12 @@ public class LockableResourcesManager extends GlobalConfiguration {
 	public void releaseResourceNames(List<String> resourceNames, @Nullable Run<?, ?> build) {
 		List<LockableResource> resourcesToRelease = new ArrayList<>();
 		for (String resourceName: resourceNames) {
-			resourcesToRelease.add(fromName(resourceName));
+			LockableResource resource = fromName(resourceName);
+			if (resource != null)
+				resourcesToRelease.add(resource);
+			else
+				LOGGER.log(Level.WARNING, "Trying to release resource named " + resourceName + " but it's not there." +
+				" Has it been deleted?");
 		}
 		// access lock acquired in this call
 		releaseResources(resourcesToRelease, build);
@@ -607,7 +612,11 @@ public class LockableResourcesManager extends GlobalConfiguration {
 				// of the LockableResource, with old locked status, so make sure to use up to date
 				// information, by getting resource by name
 				LockableResource freshResource = LockableResourcesManager.get().fromName(resource.getName());
-				candidates.add(freshResource);
+				if (freshResource != null)
+					candidates.add(freshResource);
+				else
+					LOGGER.log(Level.WARNING, "Trying to acquire resource named " + resource.getName() + " but it's not there." +
+							" Has it been deleted?");
 			}
 		} else { // label is specified
 			for (LockableResource resource : this.resources) {
